@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:quiz_app/data/questions.dart';
 import 'package:quiz_app/pages/home_page.dart';
 import 'package:quiz_app/pages/questions_page.dart';
+import 'package:quiz_app/pages/results_page.dart';
 
 class Quiz extends StatefulWidget {
   const Quiz({super.key});
@@ -10,19 +12,48 @@ class Quiz extends StatefulWidget {
 }
 
 class _QuizState extends State<Quiz> {
-  var activePage = "home-page";
+  List<String> selectedAnswers = [];
+  var _activePage = "home-page";
 
   void switchScreen() {
     setState(() {
-      activePage = "questions-page";
+      _activePage = "questions-page";
+    });
+  }
+
+  void chooseAnswer(String answer) {
+    selectedAnswers.add(answer);
+
+    if (selectedAnswers.length == questions.length) {
+      setState(() {
+        _activePage = 'results-page';
+      });
+    }
+  }
+
+  void restartQuiz() {
+    setState(() {
+      selectedAnswers = [];
+      _activePage = 'questions-screen';
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final pageWidget = activePage == "home-page"
-            ? HomePage(switchScreen)
-            : const QuestionsPage();
+    Widget pageWidget = HomePage(switchScreen);
+
+    if (_activePage == 'questions-page') {
+      pageWidget = QuestionsPage(
+        onSelectAnswer: chooseAnswer,
+      );
+    }
+
+    if (_activePage == 'results-page') {
+      pageWidget = ResultsPage(
+        chosenAnswers: selectedAnswers,
+         onRestart: restartQuiz,
+      );
+    }
 
     return Scaffold(
       body: Container(
@@ -30,8 +61,8 @@ class _QuizState extends State<Quiz> {
           gradient: LinearGradient(
             colors: [
               Colors.purple,
-              Colors.purpleAccent,
               Colors.deepPurple,
+              Colors.purpleAccent,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
